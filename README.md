@@ -1,6 +1,11 @@
-# Pipeline Description
+# Bioinformatics Workflow Description
+
+The bioinformatics workflow is split into 'Pipeline' and 'Post-pipeline' steps, consisting of steps that can be run separately for each sample and steps that require inputs from all samples, respectively.
+
 ![alt text](https://github.com/Leacavalli/GBS-GWAS-pipeline/blob/main/Bioinfo_flowchart.png)
 
+
+# Pipeline Description
 This Nextflow pipeline was built to integrate the following steps:
 <br>   
 
