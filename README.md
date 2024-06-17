@@ -37,13 +37,13 @@ Nextflow_pipeline\
 &nbsp;&nbsp;|--- 6.SNIPPY\
 &nbsp;&nbsp;|--- 7.ASSEMBLIES\
 &nbsp;&nbsp;|--- 8.ANNOTATION
-&nbsp;&nbsp;|--- 9.Post_Pipeline
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.1.MultiQC
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.2.Snippy_core
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.3.Pangenome_analysis
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.4.FastTree
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.5.PopPunk
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.6.Pyseer
+&nbsp;&nbsp;|--- 9.Post_Pipeline\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.1.MultiQC\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.2.Snippy_core\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.3.Pangenome_analysis\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.4.FastTree\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.5.PopPunk\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.6.Pyseer\
 
 # Running the Pipeline
 The pipeline contains the steps that can be run for each sample individually. From read trimming and filtering to genome annotation.
