@@ -36,14 +36,14 @@ Nextflow_pipeline\
 &nbsp;&nbsp;|--- 5.SEROTYPE_MLST\
 &nbsp;&nbsp;|--- 6.SNIPPY\
 &nbsp;&nbsp;|--- 7.ASSEMBLIES\
-&nbsp;&nbsp;|--- 8.ANNOTATION
+&nbsp;&nbsp;|--- 8.ANNOTATION\
 &nbsp;&nbsp;|--- 9.Post_Pipeline\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.1.MultiQC\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.2.Snippy_core\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.3.Pangenome_analysis\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.4.FastTree\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.5.PopPunk\
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.6.Pyseer\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- 9.6.Pyseer
 
 # Running the Pipeline
 The pipeline contains the steps that can be run for each sample individually. From read trimming and filtering to genome annotation.
@@ -95,8 +95,6 @@ For example, the command to run the pipeline for a single isolate is the followi
 ```
 nextflow run Nextflow_pipeline.nf -C nextflow.config --path_nextflow_dir <Path/to/your/Nextflow/Directory> --sample <Sample ID>
 ```
-sbatch -p shared -t 0-03:00 --mem=100000 --wrap="nextflow -C nextflow.config run Nextflow_pipeline.nf --path_nextflow_dir /n/holylfs05/LABS/hanage_lab/Lab/hsphfs1/lcavalli/GBS-GWAS-CDC-EOD-LOD/NEXTFLOW_PIPELINE_new --sample SRR5063686"
-# 36321571
 The following loop can be used  to submit jobs for all isolates:
 ```
 for i in ../0.RAW_READS/*_1.fastq.gz
@@ -120,11 +118,8 @@ Post-pipeline steps consists of bioinformatic steps that need to be run on the c
 | 6.2 | Conduct a GWAS using unitigs (i.e. DBGWAS) | [pyseer](https://github.com/mgalardini/pyseer) |
 | 6.3 | Conduct a GWAS using gene presence/absence (i.e. PanGWAS)| [pyseer](https://github.com/mgalardini/pyseer) |
 
-## 0. Create de architecture
 ```
-cd NEXTFLOW_PIPELINE
 path_nextflow_dir=$(pwd)
-
 ```
 ## 1. Genome quality control
 Tool: MultiQC\
@@ -204,7 +199,7 @@ sbatch -p shared -t 0-02:00 --mem=100000 --wrap="FastTree -gtr -nt $path_nextflo
 ```
 ## 6. GWAS
 Tool: pyseer
-### 6.0.Build similarity matrix from phylogeny
+### Build similarity matrix from phylogeny
 ```
 cd $path_nextflow_dir/9.Post_Pipeline/9.6.Pyseer
 #installation
