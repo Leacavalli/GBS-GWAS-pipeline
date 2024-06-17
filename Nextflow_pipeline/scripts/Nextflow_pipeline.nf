@@ -1,5 +1,5 @@
 process Trimmomatic {
-  conda "java"
+  conda "openjdk=11"
 
   publishDir "${params.path_nextflow_dir}/1.TRIMMED_READS" , overwrite: true
 
