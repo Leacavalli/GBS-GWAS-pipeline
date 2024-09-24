@@ -17,17 +17,17 @@ This Nextflow pipeline was built to integrate the following steps:
 | 4 | Mapping to reference genome and variant calling | [Snippy](https://github.com/tseemann/snippy)  |
 | 5 | Assemble reads  | [Unicycler](https://github.com/rrwick/Unicycler)  |
 | 6 | Genome Annotation | [Prokka](https://github.com/tseemann/prokka)  |
-| 7 | Identify contaminated samples  | [FastANI]() |
-| 8 | Assembly Quality Control (N50, # Contigs, GC %) | [QUAST]() |
-| 10 | | [POPPUNK]() |
-| 10 | | [SNIPPY_MULTI]() |
-| 10 | | [PANAROO]() |
-| 10 | | [ROARY]() |
-| 10 | | [UNITIG-caller]() |
-| 10 | | [RAxML]() |
-| 10 | | [FASTTREE]() |
-| 10 | | [CLARC]() |
-| 10 | | [Pyseer]() |
+| 7 | Identify contaminated samples  | [FastANI](https://github.com/ParBLiSS/FastANI) |
+| 8 | Assembly Quality Control (N50, # Contigs, GC %) | [quast](https://github.com/ablab/quast) |
+| 10 | Obtain Sequence Clusters (SCs) | [POPPUNK](https://github.com/bacpop/PopPUNK) |
+| 11 | Generate a core genome SNP alignment | [snippy-core, snippy-clean_full_aln](https://github.com/tseemann/snippy) |
+| 12.1 | Make accurate ML phylogeny | [RAxML](https://cme.h-its.org/exelixis/web/software/raxml/) |
+| 12.2 | Make fast ML phylogeny | [FastTree ](http://www.microbesonline.org/fasttree/) |
+| 13.1 | Pangenome analysis: identify accessory COGs | [panaroo](https://github.com/gtonkinhill/panaroo) |
+| 13.2 | Pangenome analysis: identify accessory COGs | [roary](https://sanger-pathogens.github.io/Roary/) |
+| 13.3 | Pangenome analysis: re-classify accessory COGs to reduce redundancy | [CLARC]() |
+| 14 | Call unitigs | [unitig-counter](https://github.com/bacpop/unitig-counter) |
+| 15 | SNP-GWAS, DB-GWAS and PanGWAS | [Pyseer](https://pyseer.readthedocs.io/en/master/) |
 
 # Pipeline Architecture
 
@@ -143,7 +143,8 @@ cd pyseer
 wget https://github.com/mgalardini/pyseer/blob/4b8d22f43bc5943483d9a54df1e22c6a35cd0121/scripts/phylogeny_distance.py
 git clone https://github.com/mgalardini/pyseer
 ```
-## 4. Download Raw reads from NCBI (Optional)
+## 4. Prepare input data
+### 4.0. (Optional) Download Raw reads from NCBI
 Note: SraAccList.txt contains the list of accessions you want
 ```
 cd 0.RAW_READS
@@ -153,6 +154,9 @@ do
   sbatch -p shared  -t 0-00:10 --mem=10000 --wrap="fasterq-dump --split-files $i/*sra"
 done
 ```
+### 4.1. Place your gunzipped raw reads in /NEXTFLOW_PIPELINE/0.RAW_READS/
+### 4.2. Place your your _phenotypes.txt_ file in /NEXTFLOW_PIPELINE/Files/
+
 ## 5. Run Nextflow
 The following options are required to run the pipeline for each isolates:
 ```

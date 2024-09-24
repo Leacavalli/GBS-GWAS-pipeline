@@ -1,0 +1,8 @@
+name: GBS_GWAS_panaroo_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults 
+dependencies:
+  - panaroo>=1.3
+

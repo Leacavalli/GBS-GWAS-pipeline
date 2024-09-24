@@ -257,7 +257,7 @@ script:
   cut -f1,2 ${params.path_nextflow_dir}/3.SEROTYPE_MLST/combined_results.txt  | tail -n +2  | sed 's/\t/,/g' | sort -t',' -k2,2  > ${params.path_nextflow_dir}/10.ASSIGN_CC/STs.txt
 
   # Define the file paths
-  cut -d',' -f1,9 ${params.path_nextflow_dir}/Files/GBS_CC_BIGSdb_2798265_4857213195_63187.csv | tail -n +2  | sort -t',' -k1,1 > ${params.path_nextflow_dir}/10.ASSIGN_CC/GBS_ST_CC_ref.txt
+  cut -d',' -f1,9 ${params.path_nextflow_dir}/Files/GBS_CC_profiles.csv | tail -n +2  | sort -t',' -k1,1 > ${params.path_nextflow_dir}/10.ASSIGN_CC/GBS_ST_CC_ref.txt
 
   # Process the files and join them based on the 'ST' column
   echo "ST,Sample,clonal_complex" > ${params.path_nextflow_dir}/10.ASSIGN_CC/combined_results_with_cc.txt
@@ -289,22 +289,6 @@ conda "${params.path_nextflow_dir}/Files/Snippy_environment.yml"
   """
 }
 
-process FASTTREE {
-
-  input:
-  val snippy_out
-
-  output:
-  val snippy_out
-
-  script:
-  """
-  mkdir -p ${params.path_nextflow_dir}/13.Phylogeny
-  mkdir -p ${params.path_nextflow_dir}/13.Phylogeny/13.2.FastTree
-  FastTree -gtr -nt ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln > ${params.path_nextflow_dir}/13.Phylogeny/13.2.FastTree/GBS_GWAS_FastTree_phylo.tre
-  """
-}
-
 process RAxML {
   cpus 50
 
@@ -318,9 +302,24 @@ process RAxML {
 
   script:
   """
-  mkdir -p ${params.path_nextflow_dir}/13.Phylogeny
-  mkdir -p ${params.path_nextflow_dir}/13.Phylogeny/13.1.RAxML
-  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -f a -m GTRGAMMA -p 12345 -x 12345 -N 100 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln -w ${params.path_nextflow_dir}/13.Phylogeny/13.1.RAxML -n GBS_GWAS
+  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny
+  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -f a -m GTRGAMMA -p 12345 -x 12345 -N 100 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n GBS_GWAS
+  """
+}
+
+process FASTTREE {
+  input:
+  val snippy_out
+
+  output:
+  val snippy_out
+
+  script:
+  """
+  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny
+  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny/12.2.FastTree
+  FastTree -gtr -nt ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln > ${params.path_nextflow_dir}/12.Phylogeny/12.2.FastTree/GBS_GWAS_FastTree_phylo.tre
   """
 }
 
@@ -337,9 +336,9 @@ process PANAROO {
 
   script:
   """
-  mkdir -p ${params.path_nextflow_dir}/14.Pangenome_analysis
-  mkdir -p ${params.path_nextflow_dir}/14.Pangenome_analysis/14.1.Panaroo
-  panaroo -t 8 -i ${params.path_nextflow_dir}/6.ANNOTATION/*.gff -o ${params.path_nextflow_dir}/14.Pangenome_analysis/14.1.Panaroo --clean-mode strict --alignment pan --aligner mafft
+  mkdir -p ${params.path_nextflow_dir}/13.Pangenome_analysis
+  mkdir -p ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo
+  panaroo -t 8 -i ${params.path_nextflow_dir}/6.ANNOTATION/*.gff -o ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo --clean-mode strict --alignment pan --aligner mafft
   """
 }
 
@@ -354,21 +353,21 @@ process PANAROO_CLARC {
 
   script:
   """
-  mkdir -p ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC
-  mkdir -p ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/data
-  mkdir -p ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/Output
+  mkdir -p ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC
+  mkdir -p ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/data
+  mkdir -p ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/Output
   # Prepare input Files
-  cp ${params.path_nextflow_dir}/14.Pangenome_analysis/14.1.Panaroo/gene_presence_absence_roary.csv ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/data
-  cp ${params.path_nextflow_dir}/14.Pangenome_analysis/14.1.Panaroo/pan_genome_reference.fa ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/data
-  cp ${params.path_nextflow_dir}/14.Pangenome_analysis/14.1.Panaroo/gene_data.csv ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/data
+  cp ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence_roary.csv ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/data
+  cp ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/pan_genome_reference.fa ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/data
+  cp ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_data.csv ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/data
   for i in ${params.path_nextflow_dir}/5.ASSEMBLIES/*fasta
   do
   sample=\$(echo \$i | cut -d '/' -f9-9 | cut -d '.' -f1-1)
   echo "\$sample"
-  done > ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/data/needed_sample_names.txt
+  done > ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/data/needed_sample_names.txt
 
   # Run CLARC
-  clarc --panaroo --input_dir ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/data --output_dir ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/Output
+  clarc --panaroo --input_dir ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/data --output_dir ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/Output
   """
 }
 
@@ -383,8 +382,8 @@ process ROARY {
 
   script:
   """
-  mkdir -p ${params.path_nextflow_dir}/14.Pangenome_analysis
-  roary -e --mafft -p 8 ${params.path_nextflow_dir}/6.ANNOTATION/*.gff -f ${params.path_nextflow_dir}/14.Pangenome_analysis/14.2.ROARY
+  mkdir -p ${params.path_nextflow_dir}/13.Pangenome_analysis
+  roary -e --mafft -p 8 ${params.path_nextflow_dir}/6.ANNOTATION/*.gff -f ${params.path_nextflow_dir}/13.Pangenome_analysis/13.2.ROARY
   """
 }
 
@@ -399,20 +398,20 @@ process ROARY_CLARC {
 
   script:
   """
-  mkdir -p ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC
-  mkdir -p ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/data
-  mkdir -p ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/Output
+  mkdir -p ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC
+  mkdir -p ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/data
+  mkdir -p ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output
   # Prepare input Files
-  cp ${params.path_nextflow_dir}/14.Pangenome_analysis/14.2.ROARY/gene_presence_absence.csv ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/data
-  cp ${params.path_nextflow_dir}/14.Pangenome_analysis/14.2.ROARY/pan_genome_reference.fa ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/data
+  cp ${params.path_nextflow_dir}/13.Pangenome_analysis/13.2.ROARY/gene_presence_absence.csv ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/data
+  cp ${params.path_nextflow_dir}/13.Pangenome_analysis/13.2.ROARY/pan_genome_reference.fa ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/data
   for i in ${params.path_nextflow_dir}/5.ASSEMBLIES/*fasta
   do
   sample=\$(echo \$i | cut -d '/' -f9-9 | cut -d '.' -f1-1)
   echo "\$sample"
-  done > ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/data/needed_sample_names.txt
+  done > ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/data/needed_sample_names.txt
 
   # Run CLARC
-  clarc --input_dir ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/data --output_dir ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/Output
+  clarc --input_dir ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/data --output_dir ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output
   """
 }
 
@@ -437,8 +436,8 @@ process UNITIG {
   done > qfile.txt
 
   # Run Unitig
-  unitig-counter -strains qfile.txt -output ${params.path_nextflow_dir}/15.UNITIGS -nb-cores 8
-  cdbg-ops extend --graph ${params.path_nextflow_dir}/15.UNITIGS/graph --unitigs ${params.path_nextflow_dir}/15.UNITIGS/unitigs.txt > ${params.path_nextflow_dir}/15.UNITIGS/extended.txt
+  unitig-counter -strains qfile.txt -output ${params.path_nextflow_dir}/14.UNITIGS -nb-cores 8
+  cdbg-ops extend --graph ${params.path_nextflow_dir}/14.UNITIGS/graph --unitigs ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt > ${params.path_nextflow_dir}/14.UNITIGS/extended.txt
   """
 }
 
@@ -456,11 +455,11 @@ process RAxML_dist {
   script:
   """
   # create output folders
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis
 
   # create phylogeny tsv file
-  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/13.Phylogeny/13.1.RAxML/RAxML_bestTree.GBS_GWAS > ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/RAxML_phylogeny_K.tsv
+  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.GBS_GWAS > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv
   """
 }
 
@@ -474,7 +473,7 @@ process SNPGWAS_RAxML {
 
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --similarity ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/SNPGWAS_RAxML.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/SNPGWAS_RAxML.txt
   """
 }
 
@@ -488,7 +487,7 @@ process DBGWAS_RAxML {
 
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --kmers ${params.path_nextflow_dir}/15.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/RAxML_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/DBGWAS_RAxML_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/DBGWAS_RAxML.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_RAxML_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_RAxML.txt
   """
 }
 
@@ -502,7 +501,7 @@ process PanGWAS_Panaroo_RAxML {
 
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/14.Pangenome_analysis/14.1.Panaroo/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/PanGWAS_Panaroo_RAxML.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/PanGWAS_Panaroo_RAxML.txt
   """
 }
 
@@ -521,12 +520,12 @@ process Fasttree_dist {
   script:
   """
   # create output folders
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.1.Fasttree
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.1.Fasttree
 
   # create phylogeny tsv file
-  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/13.Phylogeny/13.2.FastTree/GBS_GWAS_FastTree_phylo.tre > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.1.Fasttree/FastTree_phylogeny_K.tsv
+  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.2.FastTree/GBS_GWAS_FastTree_phylo.tre > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.1.Fasttree/FastTree_phylogeny_K.tsv
   """
 }
 
@@ -541,7 +540,7 @@ process SNPGWAS_Fasttree {
 
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --similarity ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.1.Fasttree/SNPGWAS_Fasttree.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.1.Fasttree/SNPGWAS_Fasttree.txt
   """
 }
 
@@ -556,7 +555,7 @@ process DBGWAS_Fasttree {
 
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --kmers ${params.path_nextflow_dir}/15.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.1.Fasttree/FastTree_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.1.Fasttree/DBGWAS_Fasttree_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.1.Fasttree/DBGWAS_Fasttree.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.1.Fasttree/FastTree_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.1.Fasttree/DBGWAS_Fasttree_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.1.Fasttree/DBGWAS_Fasttree.txt
   """
 }
 
@@ -571,7 +570,7 @@ process PanGWAS_Panaroo_Fasttree {
 
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/14.Pangenome_analysis/14.1.Panaroo/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.1.Fasttree/PanGWAS_Panaroo_phylo_Fasttree.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.1.Fasttree/PanGWAS_Panaroo_phylo_Fasttree.txt
   """
 }
 
@@ -589,13 +588,13 @@ process Mash_dist {
   script:
   """
   # create output folders
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash
 
   # create distance file
-  mash sketch -s 10000 -o ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/mash_sketch ${params.path_nextflow_dir}/5.ASSEMBLIES/*.fasta
-  mash dist ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/mash_sketch.msh ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/mash_sketch.msh  | square_mash > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/mash.tsv
+  mash sketch -s 10000 -o ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/mash_sketch ${params.path_nextflow_dir}/5.ASSEMBLIES/*.fasta
+  mash dist ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/mash_sketch.msh ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/mash_sketch.msh  | square_mash > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/mash.tsv
   """
 }
 
@@ -610,7 +609,7 @@ process SNPGWAS_Mash {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --distances ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/SNPGWAS_mash.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/SNPGWAS_mash.txt
   """
 }
 
@@ -625,7 +624,7 @@ process DBGWAS_Mash {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --kmers ${params.path_nextflow_dir}/15.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/DBGWAS_mash_unitig_patterns.txt --distances ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/DBGWAS_mash.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/DBGWAS_mash_unitig_patterns.txt --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/DBGWAS_mash.txt
   """
 }
 
@@ -640,7 +639,7 @@ process PanGWAS_Panaroo_Mash {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/14.Pangenome_analysis/14.1.Panaroo/gene_presence_absence.Rtab --distances ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.2.Mash/PanGWAS_Panaroo_mash.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.2.Mash/PanGWAS_Panaroo_mash.txt
   """
 }
 
@@ -658,12 +657,12 @@ process SC_dist {
   script:
   """
   # create output folders
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.3.SC
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC
 
   # create distances file
-  sed 's/,/\t/g' ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db/GBS_GWAS_db_clusters.csv > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt
+  sed 's/,/\t/g' ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db/GBS_GWAS_db_clusters.csv > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt
   """
 }
 
@@ -678,7 +677,7 @@ process SNPGWAS_SC {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --covariates ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.3.SC/SNPGWAS_SC.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/SNPGWAS_SC.txt
   """
 }
 
@@ -693,7 +692,7 @@ process DBGWAS_SC {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --kmers ${params.path_nextflow_dir}/15.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.3.SC/DBGWAS_SC_unitig_patterns.txt --covariates ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.3.SC/DBGWAS_SC.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/DBGWAS_SC_unitig_patterns.txt --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/DBGWAS_SC.txt
   """
 }
 
@@ -708,7 +707,7 @@ process PanGWAS_Panaroo_SC {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/14.Pangenome_analysis/14.1.Panaroo/gene_presence_absence.Rtab --covariates ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.2.Subanalysis_1/16.2.3.SC/PanGWAS_Panaroo_SC.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/PanGWAS_Panaroo_SC.txt
   """
 }
 
@@ -724,11 +723,11 @@ process PanGWAS_Roary_RAxML {
   script:
   """
   # create output folders
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.3.Subanalysis_2
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2
 
   # Run Pyseer
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/14.Pangenome_analysis/14.2.ROARY/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.3.Subanalysis_2/PanGWAS_Roary_RAxML.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.2.ROARY/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Roary_RAxML.txt
   """
 }
 
@@ -744,11 +743,11 @@ process PanGWAS_Panaroo_CLARC_RAxML {
   script:
   """
   # create output folders
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.3.Subanalysis_2
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2
 
   # Make gene presence/absence input (convert CLARC .csv output to Rtab)
-  awk 'BEGIN {FS=OFS=","} NR==1 {\$1="Gene" \$1} 1' ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_presence_absence.csv | awk '
+  awk 'BEGIN {FS=OFS=","} NR==1 {\$1="Gene" \$1} 1' ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_presence_absence.csv | awk '
    {
        for (i=1; i<=NF; i++)  {
            a[NR,i] = \$i
@@ -762,11 +761,11 @@ process PanGWAS_Panaroo_CLARC_RAxML {
            }
        }
    }
-   ' FS=',' OFS='\\t' > ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab
+   ' FS=',' OFS='\\t' > ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab
 
 
   # Run Pyseer
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/14.Pangenome_analysis/14.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.3.Subanalysis_2/PanGWAS_Panaroo_CLARC_RAxML.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Panaroo_CLARC_RAxML.txt
   """
 }
 
@@ -782,11 +781,11 @@ process PanGWAS_Roary_CLARC_RAxML {
   script:
   """
   # create output folders
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer
-  mkdir -p ${params.path_nextflow_dir}/16.Pyseer/16.3.Subanalysis_2
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2
 
   # Make gene presence/absence input (convert CLARC .csv output to Rtab)
-  awk 'BEGIN {FS=OFS=","} NR==1 {\$1="Gene" \$1} 1' ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.csv | awk '
+  awk 'BEGIN {FS=OFS=","} NR==1 {\$1="Gene" \$1} 1' ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.csv | awk '
    {
        for (i=1; i<=NF; i++)  {
            a[NR,i] = \$i
@@ -800,10 +799,10 @@ process PanGWAS_Roary_CLARC_RAxML {
            }
        }
    }
-   ' FS=',' OFS='\\t' > ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab
+   ' FS=',' OFS='\\t' > ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab
 
   # Run Pyseer
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/14.Pangenome_analysis/14.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/16.Pyseer/16.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/16.Pyseer/16.3.Subanalysis_2/PanGWAS_Roary_CLARC_RAxML.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Roary_CLARC_RAxML.txt
   """
 }
 
