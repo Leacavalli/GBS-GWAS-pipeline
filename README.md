@@ -19,7 +19,8 @@ This Nextflow pipeline was built to integrate the following steps:
 | 6 | Genome Annotation | [Prokka](https://github.com/tseemann/prokka)  |
 | 7 | Identify contaminated samples  | [FastANI](https://github.com/ParBLiSS/FastANI) |
 | 8 | Assembly Quality Control (N50, # Contigs, GC %) | [quast](https://github.com/ablab/quast) |
-| 10 | Obtain Sequence Clusters (SCs) | [POPPUNK](https://github.com/bacpop/PopPUNK) |
+| 9 | Obtain Sequence Cluster (SC) classification | [POPPUNK](https://github.com/bacpop/PopPUNK) |
+| 10 | Obtain Clonal Complex (CC) classification | Costume code using [POPPUNK]() |
 | 11 | Generate a core genome SNP alignment | [snippy-core, snippy-clean_full_aln](https://github.com/tseemann/snippy) |
 | 12.1 | Make accurate ML phylogeny | [RAxML](https://cme.h-its.org/exelixis/web/software/raxml/) |
 | 12.2 | Make fast ML phylogeny | [FastTree ](http://www.microbesonline.org/fasttree/) |
