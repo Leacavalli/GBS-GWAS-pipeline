@@ -177,6 +177,11 @@ process QUAST {
 process Filter_out_QC {
   input:
   val base
+  val sero_MLST_data
+  val FASTQC_data
+  val SNIPPY_data
+  val ANNOTATION_data
+  val FastANI_data
 
   output:
   val base
@@ -836,9 +841,15 @@ main:
 }
 
 workflow flow2 {
-take: data
+take:
+  quast_data
+  sero_MLST_data
+  FASTQC_data
+  SNIPPY_data
+  ANNOTATION_data
+  FastANI_data
 main:
-    Filter_out_QC(data)
+    Filter_out_QC(quast_data, sero_MLST_data, FASTQC_data, SNIPPY_data, ANNOTATION_data, FastANI_data)
 emit: Filter_out_QC.out
 }
 
@@ -942,7 +953,7 @@ channel.fromFilePairs("${params.path_nextflow_dir}/0.RAW_READS/*_{1,2}.fastq.gz"
        .map { it[0] }
        | flow1
 
-flow2(flow1.out[0])
+flow2(flow1.out)
        | collect
        | flow3
 
