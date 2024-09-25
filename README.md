@@ -20,7 +20,7 @@ This Nextflow pipeline was built to integrate the following steps:
 | 7 | Identify contaminated samples  | [FastANI](https://github.com/ParBLiSS/FastANI) |
 | 8 | Assembly Quality Control (N50, # Contigs, GC %) | [quast](https://github.com/ablab/quast) |
 | 9 | Obtain Sequence Cluster (SC) classification | [POPPUNK](https://github.com/bacpop/PopPUNK) |
-| 10 | Obtain Clonal Complex (CC) classification | Costume code using [POPPUNK]() |
+| 10 | Obtain Clonal Complex (CC) classification | Costume code using data from [BIGSdb](https://pubmlst.org/software/bigsdb) |
 | 11 | Generate a core genome SNP alignment | [snippy-core, snippy-clean_full_aln](https://github.com/tseemann/snippy) |
 | 12.1 | Make accurate ML phylogeny | [RAxML](https://cme.h-its.org/exelixis/web/software/raxml/) |
 | 12.2 | Make fast ML phylogeny | [FastTree ](http://www.microbesonline.org/fasttree/) |
@@ -149,10 +149,16 @@ git clone https://github.com/mgalardini/pyseer
 Note: SraAccList.txt contains the list of accessions you want
 ```
 cd 0.RAW_READS
-sbatch -p shared -t 1-00:00 --mem=100000 --wrap="prefetch --option-file SraAccList.txt"
-for i in *RR*
+# Download
+sbatch -p test -t 0-12:00 --mem=100000 --wrap="prefetch --option-file SraAccList.txt"
+# Extract the paired end reads
+for i in SRR*
 do
-  sbatch -p shared  -t 0-00:10 --mem=10000 --wrap="fasterq-dump --split-files $i/*sra"
+  sbatch -p shared -t 0-00:10 --mem=10000 --wrap="fasterq-dump --split-files $i/*sra"
+done
+# Gzip them
+for file in *.fastq; do
+    sbatch -p shared -t 0-00:10 --mem=10000 --wrap="gzip "$file""
 done
 ```
 ### 4.1. Place your gunzipped raw reads in /NEXTFLOW_PIPELINE/0.RAW_READS/
