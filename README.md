@@ -114,6 +114,7 @@ java -jar Trimmomatic-0.39/trimmomatic-0.39.jar -h
 cd Files
 curl -O http://www.microbesonline.org/fasttree/FastTree.c
 gcc -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
+chmod +x FastTree
 FastTree -h
 ```
 ### 3.3. Install RAxML
@@ -158,7 +159,7 @@ cd 0.RAW_READS
 # Download
 sbatch -p test -t 0-12:00 --mem=100000 --wrap="prefetch --option-file SraAccList.txt"
 # Extract the paired end reads
-for i in SRR*
+for i in *RR*
 do
   sbatch -p shared -t 0-00:10 --mem=10000 --wrap="fasterq-dump --split-files $i/*sra"
 done
