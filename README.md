@@ -83,7 +83,7 @@ git clone https://github.com/Leacavalli/GBS-GWAS-pipeline.git
 ```
 module load python
 conda create -n java      # Only run once to set up; All following times, skip this
-conda activate java
+source activate java
 conda install openjdk=11  # Only run once to set up; All following times, skip this
 java -version             # Check java version
 ```
@@ -107,9 +107,11 @@ source ~/.bashrc
 cd Files
 wget https://github.com/usadellab/Trimmomatic/files/5854859/Trimmomatic-0.39.zip
 unzip Trimmomatic-0.39.zip
+java -jar Trimmomatic-0.39/trimmomatic-0.39.jar -h
 ```
 ### 3.2. Install FastTree
 ```
+cd Files
 curl -O http://www.microbesonline.org/fasttree/FastTree.c
 gcc -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
 FastTree -h
@@ -123,7 +125,8 @@ unzip master.zip
 # compile source code
 cd standard-RAxML-master/
 make -f Makefile.SSE3.PTHREADS.gcc # parallelized and x86 processor optimized version
-ls raxmlHPC*
+cd ../
+standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -h
 ```
 ### 3.4. Install CLARC
 ```
@@ -135,8 +138,11 @@ conda env create --file clarc_env.yml
 source activate clarc_env
 cd ../
 python setup.py install
+cd ../
+clarc -h
+conda deactivate
 ```
-### 3.5. Install Pyseer
+### 3.5. Install Pyseer Files
 ```
 cd Files
 mkdir pyseer
@@ -165,6 +171,13 @@ done
 ### 4.2. Place your your _phenotypes.txt_ file in /NEXTFLOW_PIPELINE/Files/
 
 ## 5. Run Nextflow
+Note: To run the Nextflow pipeline script, you need to be in the _scripts_ directory, and activate java v.11:
+```
+cd scripts
+module load python
+source activate java
+java -version
+```
 The following options are required to run the pipeline for each isolates:
 ```
 Usage: nextflow run <Nextflow_script> [args...]
@@ -187,9 +200,9 @@ Arguments:
 ```
 For example, the command to run the pipeline for is the following:  
 ```
-nextflow -C nextflow.config run test.nf --main --sub1 --sub2 --path_nextflow_dir Path/to/your/Nextflow/Directory --path_conda_envs Path/to/your/conda/env/Directory
+nextflow -C nextflow.config run Nextflow_pipeline_FINAL.nf --main --sub1 --sub2 --path_nextflow_dir Path/to/your/Nextflow/Directory --path_conda_envs Path/to/your/conda/env/Directory
 ```
 The command to submit the pipeline as a batch job is:  
 ```
-sbatch -p sapphire -c 112 -t 3-00:00 --mem=100000 --wrap="nextflow -C nextflow.config run test.nf --main --sub1 --sub2 --path_nextflow_dir Path/to/your/Nextflow/Directory --path_conda_envs Path/to/your/conda/env/Directory"
+sbatch -p sapphire -c 112 -t 3-00:00 --mem=100000 --wrap="nextflow -C nextflow.config run Nextflow_pipeline_FINAL.nf --main --sub1 --sub2 --path_nextflow_dir Path/to/your/Nextflow/Directory --path_conda_envs Path/to/your/conda/env/Directory"
 ```
