@@ -87,6 +87,8 @@ conda create -n java      # Only run once to set up; All following times, skip t
 source activate java
 conda install openjdk=11  # Only run once to set up; All following times, skip this
 java -version             # Check java version
+deactivate java             
+
 ```
 ### 2.2. Install Nextflow
 ```
@@ -165,6 +167,10 @@ git clone https://github.com/mgalardini/pyseer
 Note: SraAccList.txt contains the list of accessions you want
 ```
 cd 0.RAW_READS
+# Install and activate SRA tools
+conda create -n sra-tools
+source activate sra-tools
+conda install bioconda::sra-tools
 # Download
 sbatch -p test -t 0-12:00 --mem=100000 --wrap="prefetch --option-file SraAccList.txt"
 # Extract the paired end reads
@@ -208,12 +214,9 @@ Arguments:
         --SC                    <Runs Main analysis with population structure controlled using Sequence Cluster (SC) classifications.>
 
 ```
-For example, the command to run the pipeline for is the following:  
+For example, the command to submit the pipeline as a batch job is:  
 ```
-nextflow -C nextflow.config run Nextflow_pipeline_FINAL.nf --main --sub1 --sub2 --path_nextflow_dir Path/to/your/Nextflow/Directory --path_conda_envs Path/to/your/conda/env/Directory
+sbatch -p test -c 112 -t 0-12:00 --mem=100000 --wrap="nextflow -C nextflow.config run Nextflow_pipeline_FINAL.nf --main --sub1 --sub2 --path_nextflow_dir Path/to/your/Nextflow/Directory --path_conda_envs Path/to/your/conda/env/Directory"
 ```
 Note: Your local conda environments directory can be found using the command "conda config --show envs_dirs"
-The command to submit the pipeline as a batch job is:  
-```
-sbatch -p sapphire -c 112 -t 3-00:00 --mem=100000 --wrap="nextflow -C nextflow.config run Nextflow_pipeline_FINAL.nf --main --sub1 --sub2 --path_nextflow_dir Path/to/your/Nextflow/Directory --path_conda_envs Path/to/your/conda/env/Directory"
-```
+Note: The minimum number of CPUs required to run this pipeline is 50, since we assign 50 CPUs to the RAxML process, for time efficiency. Additionally, the poppunk, panaroo and all pyseer processes takes 8 cpus. If you wish to modify this requirement, you may directly edit the pipeline script "Nextflow_pipeline_FINAL.nf", replacing "cpus 50" with the number of your choice.
