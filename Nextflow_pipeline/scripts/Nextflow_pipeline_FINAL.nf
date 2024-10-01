@@ -204,9 +204,18 @@ process Filter_out_QC {
 
   # Check the conditions and move files if necessary
     if (( \$(echo "\$ANI < 95" | bc -l) )) || [ "\$n50" -lt 30000 ] || [ "\$contigs" -gt 250 ] || (( \$(echo "\$gc <= 30" | bc -l) )) || (( \$(echo "\$gc >= 40" | bc -l) )) || [ "\$total_length" -lt 1700000 ] || [ "\$total_length" -gt 2400000 ] || [[ "\$Adapter_content_1" == "FAIL" || "\$Adapter_content_2" == "FAIL" ]]; then
-      mv ${params.path_nextflow_dir}/4.SNIPPY/${base} ${params.path_nextflow_dir}/4.SNIPPY/Filter_out_QC
+      # Check if the SNIPPY directory exists, and move it if it does
+      if [ -d "${params.path_nextflow_dir}/4.SNIPPY/${base}" ]; then
+        mv ${params.path_nextflow_dir}/4.SNIPPY/${base} ${params.path_nextflow_dir}/4.SNIPPY/Filter_out_QC
+      fi
+      # Check if the assembly fasta file exists, and move it if it does
+      if [ -f "${params.path_nextflow_dir}/5.ASSEMBLIES/${base}.fasta" ]; then
       mv ${params.path_nextflow_dir}/5.ASSEMBLIES/${base}.fasta ${params.path_nextflow_dir}/5.ASSEMBLIES/Filter_out_QC
+      fi
+      # Check if the annotation gff file exists, and move it if it does
+      if [ -f "${params.path_nextflow_dir}/6.ANNOTATION/${base}.gff" ]; then
       mv ${params.path_nextflow_dir}/6.ANNOTATION/${base}.gff ${params.path_nextflow_dir}/6.ANNOTATION/Filter_out_QC
+      fi
     fi
   """
 }
@@ -231,7 +240,7 @@ process POPPUNK {
   mkdir -p ${params.path_nextflow_dir}/9.POPPUNK
   for i in ${params.path_nextflow_dir}/5.ASSEMBLIES/*fasta
   do
-  sample=\$(echo \$i | cut -d '/' -f9-9 | cut -d '.' -f1-1)
+  sample=\$(basename \$i | cut -d '.' -f1-1)
   echo -e "\$sample\t\$i"
   done > ${params.path_nextflow_dir}/9.POPPUNK/qfile.txt
 
@@ -239,7 +248,7 @@ process POPPUNK {
   # 1. Create sketch database
   poppunk --create-db --output ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db --r-files ${params.path_nextflow_dir}/9.POPPUNK/qfile.txt --threads 8
   # 2. Run QC on the database
-  poppunk --qc-db --ref-db ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db --length-range 1700000 2400000  --max-zero-dist 20 --threads 8
+  poppunk --qc-db --ref-db ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db --length-range 1500000 2500000  --max-zero-dist 20 --threads 8
   # 3. Fit a model, check cluster (core+accessory)
   poppunk --fit-model dbscan --ref-db ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db --threads 8
   """
@@ -367,7 +376,7 @@ process PANAROO_CLARC {
   cp ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_data.csv ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/data
   for i in ${params.path_nextflow_dir}/5.ASSEMBLIES/*fasta
   do
-  sample=\$(echo \$i | cut -d '/' -f9-9 | cut -d '.' -f1-1)
+  sample=\$(basename \$i | cut -d '.' -f1-1)
   echo "\$sample"
   done > ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/data/needed_sample_names.txt
 
@@ -411,7 +420,7 @@ process ROARY_CLARC {
   cp ${params.path_nextflow_dir}/13.Pangenome_analysis/13.2.ROARY/pan_genome_reference.fa ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/data
   for i in ${params.path_nextflow_dir}/5.ASSEMBLIES/*fasta
   do
-  sample=\$(echo \$i | cut -d '/' -f9-9 | cut -d '.' -f1-1)
+  sample=\$(basename \$i | cut -d '.' -f1-1)
   echo "\$sample"
   done > ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/data/needed_sample_names.txt
 
@@ -436,7 +445,7 @@ process UNITIG {
   # Prepare input file
   for i in ${params.path_nextflow_dir}/5.ASSEMBLIES/*fasta
   do
-  sample=\$(echo \$i | cut -d '/' -f9-9 | cut -d '.' -f1-1)
+  sample=\$(basename \$i | cut -d '.' -f1-1)
   echo -e "\$sample\t\$i"
   done > qfile.txt
 

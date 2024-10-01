@@ -77,6 +77,7 @@ The pipeline contains the steps that can be run for each sample individually. Fr
 ## 1. Clone this Github
 ```
 git clone https://github.com/Leacavalli/GBS-GWAS-pipeline.git
+cd GBS-GWAS-pipeline/Nextflow_pipeline/
 ```
 ## 2. Install Java + Nextflow
 ### 2.1. Install Java v.11 to run Nextflow
@@ -108,6 +109,14 @@ cd Files
 wget https://github.com/usadellab/Trimmomatic/files/5854859/Trimmomatic-0.39.zip
 unzip Trimmomatic-0.39.zip
 java -jar Trimmomatic-0.39/trimmomatic-0.39.jar -h
+```
+### 3.1. Install Unicycler
+```
+module load python
+conda create -n java      # Only run once to set up; All following times, skip this
+source activate java
+conda install
+java -version
 ```
 ### 3.2. Install FastTree
 ```
@@ -203,6 +212,7 @@ For example, the command to run the pipeline for is the following:
 ```
 nextflow -C nextflow.config run Nextflow_pipeline_FINAL.nf --main --sub1 --sub2 --path_nextflow_dir Path/to/your/Nextflow/Directory --path_conda_envs Path/to/your/conda/env/Directory
 ```
+Note: Your local conda environments directory can be found using the command "conda config --show envs_dirs"
 The command to submit the pipeline as a batch job is:  
 ```
 sbatch -p sapphire -c 112 -t 3-00:00 --mem=100000 --wrap="nextflow -C nextflow.config run Nextflow_pipeline_FINAL.nf --main --sub1 --sub2 --path_nextflow_dir Path/to/your/Nextflow/Directory --path_conda_envs Path/to/your/conda/env/Directory"
