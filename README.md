@@ -112,15 +112,15 @@ wget https://github.com/usadellab/Trimmomatic/files/5854859/Trimmomatic-0.39.zip
 unzip Trimmomatic-0.39.zip
 java -jar Trimmomatic-0.39/trimmomatic-0.39.jar -h
 ```
-### 3.1. Install Unicycler
+### 3.2. Install Unicycler
 ```
 module load python
-conda create -n java      # Only run once to set up; All following times, skip this
-source activate java
-conda install
-java -version
+conda create -n  unicycler   
+source activate unicycler
+conda install bioconda::unicycler
+
 ```
-### 3.2. Install FastTree
+### 3.3. Install FastTree
 ```
 cd Files
 curl -O http://www.microbesonline.org/fasttree/FastTree.c
@@ -128,7 +128,7 @@ gcc -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
 chmod +x FastTree
 FastTree -h
 ```
-### 3.3. Install RAxML
+### 3.4. Install RAxML
 ```
 # download
 cd Files
@@ -140,7 +140,7 @@ make -f Makefile.SSE3.PTHREADS.gcc # parallelized and x86 processor optimized ve
 cd ../
 standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -h
 ```
-### 3.4. Install CLARC
+### 3.5. Install CLARC
 ```
 cd Files
 git clone https://github.com/IndraGonz/CLARC.git
@@ -154,7 +154,7 @@ cd ../
 clarc -h
 conda deactivate
 ```
-### 3.5. Install Pyseer Files
+### 3.6. Install Pyseer Files
 ```
 cd Files
 mkdir pyseer
