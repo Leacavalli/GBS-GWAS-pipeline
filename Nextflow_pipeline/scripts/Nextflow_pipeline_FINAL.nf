@@ -250,11 +250,13 @@ process POPPUNK {
   # 1. Create sketch database
   poppunk --create-db --output ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db --r-files ${params.path_nextflow_dir}/9.POPPUNK/qfile.txt --threads 8
   # 2. Run QC on the database
-  poppunk --qc-db --ref-db ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db --length-range 1500000 2500000  --max-zero-dist 20 --threads 8
+  poppunk --qc-db --ref-db ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db --length-range 1500000 2500000  --max-zero-dist 1 --threads 8
   # 3. Fit a model, check cluster (core+accessory)
   poppunk --fit-model dbscan --ref-db ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db --threads 8
+  # 4. Fit a model, check cluster (core only)
+  poppunk --fit-model refine --ref-db ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db --threads 8 --indiv-refine core
   # Keep only the samples with classified SC for pyseer
-  tail -n +2 ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db/GBS_GWAS_db_clusters.csv | cut -d ',' -f1 | sort > sorted_file1.csv
+  tail -n +2 ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db/GBS_GWAS_db_core_clusters.csv | cut -d ',' -f1 | sort > sorted_file1.csv
   cut -f1 ${params.path_nextflow_dir}/Files/phenotypes.txt | sort > sorted_file2.csv
   comm -3 sorted_file1.csv  sorted_file2.csv | sed 's/\t//g' > removed_samples.txt
   grep -v -F -f removed_samples.txt ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt > ${params.path_nextflow_dir}/Files/phenotypes_filtered_SC.txt
@@ -305,15 +307,39 @@ conda "${params.path_nextflow_dir}/Files/Snippy_environment.yml"
 
   script:
   """
-  snippy-core --ref ${params.path_nextflow_dir}/Files/AP018935.1.fa ${params.path_nextflow_dir}/4.SNIPPY/*RR*
+  SNIPPY_DIRS=\$(find ${params.path_nextflow_dir}/4.SNIPPY -maxdepth 1 -type d ! -name "Outgroup")
+  snippy-core --ref ${params.path_nextflow_dir}/Files/AP018935.1.fa \$SNIPPY_DIRS
   snippy-clean_full_aln core.full.aln > clean.full.aln
+  """
+}
+
+
+process SNIPPY_MULTI_OUTGROUP {
+conda "${params.path_nextflow_dir}/Files/Snippy_environment.yml"
+
+  publishDir "${params.path_nextflow_dir}/11.SNIPPY_MULTI", overwrite: true
+
+  input:
+  val base
+
+  output:
+  path "core.aln"
+  path "core.full.aln"
+  path "core.tab"
+  path "core.vcf"
+  path "core.txt"
+  path "core.ref.fa"
+  path "clean.full.aln"
+
+  script:
+  """
+  snippy-core --ref ${params.path_nextflow_dir}/Files/AP018935.1.fa --prefix core_outgroup ${params.path_nextflow_dir}/4.SNIPPY/*
+  snippy-clean_full_aln core_outgroup.full.aln > clean_outgroup.full.aln
   """
 }
 
 process RAxML {
   cpus 50
-
-  publishDir "${params.path_nextflow_dir}/11.RAxML", overwrite: true
 
   input:
   val snippy_out
@@ -325,7 +351,34 @@ process RAxML {
   """
   mkdir -p ${params.path_nextflow_dir}/12.Phylogeny
   mkdir -p ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML
-  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -f a -m GTRGAMMA -p 12345 -x 12345 -N 100 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n GBS_GWAS
+  # Generate 100 ML trees on distinct starting trees and output the best likelihood tree
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -# 100 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n T1
+  # Generate 250 bootstrap tree to infer statistical support of the branches.
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -b 12345 -# 250 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n T2
+  # Draw bipartitions on the best ML tree
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRCAT -p 12345 -f b -t ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.T1 -z ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bootstrap.T2 -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n T3
+  """
+}
+
+process RAxML_OUTGROUP {
+  cpus 50
+
+  input:
+  val snippy_out
+
+  output:
+  val snippy_out
+
+  script:
+  """
+  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny
+  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup
+  # Generate 100 ML trees on distinct starting trees and output the best likelihood tree
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -# 100 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean_outgroup.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup -n T1 -o Outgroup
+  # Generate 250 bootstrap tree to infer statistical support of the branches.
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -b 12345 -# 250 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean_outgroup.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup -n T2 -o Outgroup
+  # Draw bipartitions on the best ML tree
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRCAT -p 12345 -f b -t ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.T1 -z ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bootstrap.T2 -w ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup -n T3
   """
 }
 
@@ -683,7 +736,7 @@ process SC_dist {
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC
 
   # create distances file
-  sed 's/,/\t/g' ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db/GBS_GWAS_db_clusters.csv > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt
+  sed 's/,/\t/g' ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db/GBS_GWAS_db_core_clusters.csv > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/16.2.3.SC/SC_clusters.txt
   """
 }
 
@@ -883,6 +936,12 @@ workflow flow3 {
     // Step 2: FASTTREE and RAxML both depend on the output of SNIPPY_MULTI
     FASTTREE(SNIPPY_MULTI.out[0])
     RAxML(SNIPPY_MULTI.out[0])
+
+    // If an outgroup is specified, run RAxML with outgroup rooting
+    if ( params.OUTGROUP) {
+    SNIPPY_MULTI_OUTGROUP(data)
+    RAxML_OUTGROUP(SNIPPY_MULTI_OUTGROUP.out[0])
+    }
 
     // Step 3: PANAROO_CLARC depends on PANAROO output, and ROARY_CLARC depends on ROARY output
     PANAROO_CLARC(PANAROO.out[0])
