@@ -1,3 +1,4 @@
+params.OUTGROUP = false
 params.main = false
 params.sub1 = false
 params.Fasttree = false
@@ -177,11 +178,6 @@ process QUAST {
 process Filter_out_QC {
   input:
   val base
-  val sero_MLST_data
-  val FASTQC_data
-  val SNIPPY_data
-  val ANNOTATION_data
-  val FastANI_data
 
   output:
   val base
@@ -217,7 +213,8 @@ process Filter_out_QC {
       mv ${params.path_nextflow_dir}/6.ANNOTATION/${base}.gff ${params.path_nextflow_dir}/6.ANNOTATION/Filter_out_QC
       fi
       # Remove Sample from GWAS phenotype file
-      grep -v "^${base}\s" ${params.path_nextflow_dir}/Files/phenotypes.txt > ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt
+      grep -v "${base}" ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt > ${params.path_nextflow_dir}/Files/phenotypes_filtered.tmp
+      mv ${params.path_nextflow_dir}/Files/phenotypes_filtered.tmp ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt
     fi
   """
 }
@@ -277,7 +274,7 @@ script:
 
   # Append all results from mlst to a single file
   awk '(NR == 1) || (FNR > 1)' ${params.path_nextflow_dir}/3.SEROTYPE_MLST/*__mlst__Streptococcus_agalactiae__results.txt > ${params.path_nextflow_dir}/3.SEROTYPE_MLST/combined_results.txt
-  cut -f1,2 ${params.path_nextflow_dir}/3.SEROTYPE_MLST/combined_results.txt  | tail -n +2  | sed 's/\t/,/g' | sort -t',' -k2,2  > ${params.path_nextflow_dir}/10.ASSIGN_CC/STs.txt
+  cut -f1,2 ${params.path_nextflow_dir}/3.SEROTYPE_MLST/combined_results.txt | tail -n +2 | sed 's/\t/,/g' | sort -t',' -k2,2 | sed  's/\\*//g'  > ${params.path_nextflow_dir}/10.ASSIGN_CC/STs.txt
 
   # Define the file paths
   cut -d',' -f1,9 ${params.path_nextflow_dir}/Files/GBS_CC_profiles.csv | tail -n +2  | sort -t',' -k1,1 > ${params.path_nextflow_dir}/10.ASSIGN_CC/GBS_ST_CC_ref.txt
@@ -307,8 +304,7 @@ conda "${params.path_nextflow_dir}/Files/Snippy_environment.yml"
 
   script:
   """
-  SNIPPY_DIRS=\$(find ${params.path_nextflow_dir}/4.SNIPPY -maxdepth 1 -type d ! -name "Outgroup")
-  snippy-core --ref ${params.path_nextflow_dir}/Files/AP018935.1.fa \$SNIPPY_DIRS
+  snippy-core --ref ${params.path_nextflow_dir}/Files/AP018935.1.fa ${params.path_nextflow_dir}/4.SNIPPY/*RR*
   snippy-clean_full_aln core.full.aln > clean.full.aln
   """
 }
@@ -333,12 +329,12 @@ conda "${params.path_nextflow_dir}/Files/Snippy_environment.yml"
 
   script:
   """
-  snippy-core --ref ${params.path_nextflow_dir}/Files/AP018935.1.fa --prefix core_outgroup ${params.path_nextflow_dir}/4.SNIPPY/*
+  snippy-core --ref ${params.path_nextflow_dir}/Files/AP018935.1.fa --prefix core_outgroup ${params.path_nextflow_dir}/4.SNIPPY/* ${params.path_nextflow_dir}/4.SNIPPY/Outgroup
   snippy-clean_full_aln core_outgroup.full.aln > clean_outgroup.full.aln
   """
 }
 
-process RAxML {
+process RAxML_MLsearch {
   cpus 50
 
   input:
@@ -353,12 +349,46 @@ process RAxML {
   mkdir -p ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML
   # Generate 100 ML trees on distinct starting trees and output the best likelihood tree
   ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -# 100 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n T1
-  # Generate 250 bootstrap tree to infer statistical support of the branches.
-  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -b 12345 -# 250 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n T2
-  # Draw bipartitions on the best ML tree
-  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRCAT -p 12345 -f b -t ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.T1 -z ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bootstrap.T2 -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n T3
   """
 }
+
+process RAxML_bootstrap {
+  cpus 50
+
+  input:
+  val snippy_out
+
+  output:
+  val snippy_out
+
+  script:
+  """
+  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny
+  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML
+  # Generate 250 bootstrap tree to infer statistical support of the branches.
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -b 12345 -# 250 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n T2
+  """
+}
+
+process RAxML_bipartition {
+  cpus 50
+
+  input:
+  val RAxML_MLsearch_out
+  val RAxML_bootstrap_out
+
+  output:
+  val RAxML_MLsearch_out
+
+  script:
+  """
+ # Draw bipartitions on the best ML tree
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRCAT -p 12345 -f b -t ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.T1 -z ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bootstrap.T2 -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n T3
+    """
+}
+
+
+
 
 process RAxML_OUTGROUP {
   cpus 50
@@ -378,7 +408,7 @@ process RAxML_OUTGROUP {
   # Generate 250 bootstrap tree to infer statistical support of the branches.
   ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -b 12345 -# 250 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean_outgroup.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup -n T2 -o Outgroup
   # Draw bipartitions on the best ML tree
-  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRCAT -p 12345 -f b -t ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.T1 -z ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bootstrap.T2 -w ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup -n T3
+  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRCAT -p 12345 -f b -t ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup/RAxML_bestTree.T1 -z ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup/RAxML_bootstrap.T2 -w ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup -n T3
   """
 }
 
@@ -533,7 +563,7 @@ process RAxML_dist {
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis
 
   # create phylogeny tsv file
-  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.GBS_GWAS > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv
+  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.T1 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv
   """
 }
 
@@ -911,14 +941,9 @@ main:
 
 workflow flow2 {
 take:
-  quast_data
-  sero_MLST_data
-  FASTQC_data
-  SNIPPY_data
-  ANNOTATION_data
-  FastANI_data
+  data
 main:
-    Filter_out_QC(quast_data, sero_MLST_data, FASTQC_data, SNIPPY_data, ANNOTATION_data, FastANI_data)
+    Filter_out_QC(data)
 emit: Filter_out_QC.out
 }
 
@@ -935,7 +960,9 @@ workflow flow3 {
 
     // Step 2: FASTTREE and RAxML both depend on the output of SNIPPY_MULTI
     FASTTREE(SNIPPY_MULTI.out[0])
-    RAxML(SNIPPY_MULTI.out[0])
+    RAxML_MLsearch(SNIPPY_MULTI.out[0])
+    RAxML_bootstrap(SNIPPY_MULTI.out[0])
+    RAxML_bipartition(RAxML_MLsearch.out[0], RAxML_bootstrap.out[0])
 
     // If an outgroup is specified, run RAxML with outgroup rooting
     if ( params.OUTGROUP) {
@@ -948,7 +975,7 @@ workflow flow3 {
     ROARY_CLARC(ROARY.out[0])
 
     emit:
-    RAxML.out[0]
+    RAxML_bipartition.out[0]
     UNITIG.out[0]
     PANAROO.out[0]
     SNIPPY_MULTI.out[0]
@@ -1031,7 +1058,7 @@ channel.fromFilePairs("${params.path_nextflow_dir}/0.RAW_READS/*_{1,2}.fastq.gz"
 flow2(flow1.out)
        | collect
        | flow3
-
+       
   if( params.main ) {
     flow_main(flow3.out[0], flow3.out[1], flow3.out[2])
     println "Running the Main Analysis: SNP-GWAS, DB-GWAS and Pan-GWAS, with the population structure controlled using a RAxML phylogeny and the accessory genome defined per Panaroo."

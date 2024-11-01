@@ -185,6 +185,7 @@ done
 ```
 ### 4.1. Place your gunzipped raw reads in /NEXTFLOW_PIPELINE/0.RAW_READS/
 ### 4.2. Place your your _phenotypes.txt_ file in /NEXTFLOW_PIPELINE/Files/
+### 4.3. Create a copy _phenotypes_filtered.txt_ of your _phenotypes.txt_ file in /NEXTFLOW_PIPELINE/Files/
 
 ## 5. Run Nextflow
 Note: To run the Nextflow pipeline script, you need to be in the _scripts_ directory, and activate java v.11:
