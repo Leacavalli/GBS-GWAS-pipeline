@@ -939,11 +939,17 @@ main:
       FastANI.out[0]
 }
 
+
 workflow flow2 {
 take:
-  data
+  quast_data
+  sero_MLST_data
+  FASTQC_data
+  SNIPPY_data
+  ANNOTATION_data
+  FastANI_data
 main:
-    Filter_out_QC(data)
+    Filter_out_QC(quast_data, sero_MLST_data, FASTQC_data, SNIPPY_data, ANNOTATION_data, FastANI_data)
 emit: Filter_out_QC.out
 }
 
@@ -1058,7 +1064,7 @@ channel.fromFilePairs("${params.path_nextflow_dir}/0.RAW_READS/*_{1,2}.fastq.gz"
 flow2(flow1.out)
        | collect
        | flow3
-       
+
   if( params.main ) {
     flow_main(flow3.out[0], flow3.out[1], flow3.out[2])
     println "Running the Main Analysis: SNP-GWAS, DB-GWAS and Pan-GWAS, with the population structure controlled using a RAxML phylogeny and the accessory genome defined per Panaroo."
