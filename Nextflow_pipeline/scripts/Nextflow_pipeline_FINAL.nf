@@ -218,7 +218,8 @@ process Filter_out_QC {
       mv ${params.path_nextflow_dir}/6.ANNOTATION/${base}.gff ${params.path_nextflow_dir}/6.ANNOTATION/Filter_out_QC
       fi
       # Remove Sample from GWAS phenotype file
-      grep -v "^${base}\s" ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt >> ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt
+      grep -v "${base}" ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt > ${params.path_nextflow_dir}/Files/phenotypes_filtered.tmp
+      mv ${params.path_nextflow_dir}/Files/phenotypes_filtered.tmp ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt
     fi
   """
 }
