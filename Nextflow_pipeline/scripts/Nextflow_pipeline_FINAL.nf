@@ -178,6 +178,11 @@ process QUAST {
 process Filter_out_QC {
   input:
   val base
+  val sero_MLST_data
+  val FASTQC_data
+  val SNIPPY_data
+  val ANNOTATION_data
+  val FastANI_data
 
   output:
   val base
@@ -213,8 +218,7 @@ process Filter_out_QC {
       mv ${params.path_nextflow_dir}/6.ANNOTATION/${base}.gff ${params.path_nextflow_dir}/6.ANNOTATION/Filter_out_QC
       fi
       # Remove Sample from GWAS phenotype file
-      grep -v "${base}" ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt > ${params.path_nextflow_dir}/Files/phenotypes_filtered.tmp
-      mv ${params.path_nextflow_dir}/Files/phenotypes_filtered.tmp ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt
+      grep -v "^${base}\s" ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt >> ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt
     fi
   """
 }
