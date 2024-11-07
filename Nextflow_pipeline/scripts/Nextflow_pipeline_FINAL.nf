@@ -428,7 +428,7 @@ process FASTTREE {
   """
   mkdir -p ${params.path_nextflow_dir}/12.Phylogeny
   mkdir -p ${params.path_nextflow_dir}/12.Phylogeny/12.2.FastTree
-  FastTree -gtr -nt ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln > ${params.path_nextflow_dir}/12.Phylogeny/12.2.FastTree/GBS_GWAS_FastTree_phylo.tre
+  ${params.path_nextflow_dir}/Files/FastTree -gtr -nt ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln > ${params.path_nextflow_dir}/12.Phylogeny/12.2.FastTree/GBS_GWAS_FastTree_phylo.tre
   """
 }
 
