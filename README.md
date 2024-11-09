@@ -126,7 +126,7 @@ cd Files
 curl -O http://www.microbesonline.org/fasttree/FastTree.c
 gcc -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
 chmod +x FastTree
-FastTree -h
+./FastTree -h
 ```
 ### 3.4. Install RAxML
 ```
