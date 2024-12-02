@@ -144,7 +144,6 @@ conda create -n raxml-ng
 source activate raxml-ng
 conda install -c bioconda raxml-ng
 raxml-ng -h
-raxml-ng --parse --msa clean.full.aln --model GTR+G --prefix T1
 ```
 ### 3.5. Install ROARY
 ```
