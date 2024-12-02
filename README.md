@@ -128,19 +128,36 @@ gcc -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
 chmod +x FastTree
 FastTree -h
 ```
-### 3.4. Install RAxML
+### 3.4. Install RAxML-NG
 ```
 # download
-cd Files
-wget https://github.com/stamatak/standard-RAxML/archive/master.zip
-unzip master.zip
+# cd Files
+# wget https://github.com/stamatak/standard-RAxML/archive/master.zip
+# unzip master.zip
 # compile source code
-cd standard-RAxML-master/
-make -f Makefile.SSE3.PTHREADS.gcc # parallelized and x86 processor optimized version
-cd ../
-standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -h
+# cd standard-RAxML-master/
+# make -f Makefile.SSE3.PTHREADS.gcc # parallelized and x86 processor optimized version
+# cd ../
+# standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -h
+module load python
+conda create -n raxml-ng
+source activate raxml-ng
+conda install -c bioconda raxml-ng
+raxml-ng -h
+raxml-ng --parse --msa clean.full.aln --model GTR+G --prefix T1
 ```
-### 3.5. Install CLARC
+### 3.5. Install ROARY
+```
+module load python
+conda create -n roary
+source activate roary
+conda config --add channels r
+conda config --add channels defaults
+conda config --add channels conda-forge
+conda config --add channels bioconda
+conda install roary
+```
+### 3.6. Install CLARC
 ```
 cd Files
 git clone https://github.com/IndraGonz/CLARC.git
@@ -154,12 +171,9 @@ cd ../
 clarc -h
 conda deactivate
 ```
-### 3.6. Install Pyseer Files
+### 3.7. Install Pyseer Files
 ```
 cd Files
-mkdir pyseer
-cd pyseer
-wget https://github.com/mgalardini/pyseer/blob/4b8d22f43bc5943483d9a54df1e22c6a35cd0121/scripts/phylogeny_distance.py
 git clone https://github.com/mgalardini/pyseer
 ```
 ## 4. Prepare input data
@@ -185,6 +199,10 @@ done
 ```
 ### 4.1. Place your gunzipped raw reads in /NEXTFLOW_PIPELINE/0.RAW_READS/
 ### 4.2. Place your your _phenotypes.txt_ file in /NEXTFLOW_PIPELINE/Files/
+Note: Make sure it has a header.
+```
+sed -i '1i\samples\tbinary' phenotypes.txt
+```
 ### 4.3. Create a copy _phenotypes_filtered.txt_ of your _phenotypes.txt_ file in /NEXTFLOW_PIPELINE/Files/
 
 ## 5. Run Nextflow
