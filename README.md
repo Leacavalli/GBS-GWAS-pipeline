@@ -177,7 +177,7 @@ git clone https://github.com/mgalardini/pyseer
 ```
 ## 4. Prepare input data
 ### 4.0. (Optional) Download Raw reads from NCBI
-Note: SraAccList.txt contains the list of accessions you want
+Note: SraAccList.txt contains the list of accessions you want.
 ```
 cd 0.RAW_READS
 # Install and activate SRA tools
@@ -196,13 +196,15 @@ for file in *.fastq; do
     sbatch -p shared -t 0-00:10 --mem=10000 --wrap="gzip "$file""
 done
 ```
-### 4.1. Place your gunzipped raw reads in /NEXTFLOW_PIPELINE/0.RAW_READS/
-### 4.2. Place your your _phenotypes.txt_ file in /NEXTFLOW_PIPELINE/Files/
+Place your gunzipped raw reads in /NEXTFLOW_PIPELINE/0.RAW_READS/
+
+### 4.1. Prepare the phenotype files
+* Place your your _phenotypes.txt_ file in _Files/_
 Note: Make sure it has a header.
 ```
 sed -i '1i\samples\tbinary' phenotypes.txt
 ```
-### 4.3. Create a copy _phenotypes_filtered.txt_ of your _phenotypes.txt_ file in /NEXTFLOW_PIPELINE/Files/
+* Create a copy _phenotypes_filtered.txt_ of your _phenotypes.txt_ file in _Files/_
 
 ## 5. Run Nextflow
 Note: To run the Nextflow pipeline script, you need to be in the _scripts_ directory, and activate java v.11:
