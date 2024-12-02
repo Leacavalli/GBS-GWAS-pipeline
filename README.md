@@ -177,7 +177,7 @@ git clone https://github.com/mgalardini/pyseer
 ```
 ## 4. Prepare input data
 ### 4.0. (Optional) Download Raw reads from NCBI
-Note: SraAccList.txt contains the list of accessions you want.
+SraAccList.txt contains the list of accessions you want.
 ```
 cd 0.RAW_READS
 # Install and activate SRA tools
@@ -196,7 +196,7 @@ for file in *.fastq; do
     sbatch -p shared -t 0-00:10 --mem=10000 --wrap="gzip "$file""
 done
 ```
-Place your gunzipped raw reads in /NEXTFLOW_PIPELINE/0.RAW_READS/
+Place your gunzipped raw reads in _0.RAW_READS/_
 
 ### 4.1. Prepare the phenotype files
 * Place your your _phenotypes.txt_ file in _Files/_
