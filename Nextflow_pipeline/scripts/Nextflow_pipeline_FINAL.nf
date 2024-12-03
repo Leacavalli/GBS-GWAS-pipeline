@@ -1,4 +1,4 @@
-15.params.OUTGROUP = false
+params.OUTGROUP = false
 params.main = false
 params.sub1 = false
 params.Fasttree = false
@@ -1065,7 +1065,7 @@ workflow flow_sub2 {
     roary_clarc_data
 
     main:
-    Fasttree_dist(fasttree_data, unitig_data, panaroo_data)
+    Fasttree_dist(fasttree_data, panaroo_clarc_data, roary_clarc_data)
     PanGWAS_Roary_Fasttree(Fasttree_dist.out[0])
     PanGWAS_Panaroo_CLARC_Fasttree(Fasttree_dist.out[0])
     PanGWAS_Roary_CLARC_Fasttree(Fasttree_dist.out[0])

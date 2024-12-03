@@ -160,13 +160,12 @@ conda install roary
 ```
 cd Files
 git clone https://github.com/IndraGonz/CLARC.git
-cd CLARC/envs
+chmod -R u+w CLARC
+cd CLARC
 module load python
-conda env create --file clarc_env.yml
+conda env create --file envs/clarc_env.yml
 source activate clarc_env
-cd ../
 python setup.py install
-cd ../
 clarc -h
 conda deactivate
 ```
