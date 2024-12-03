@@ -866,7 +866,7 @@ process PanGWAS_Panaroo_CLARC_RAxML {
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2
 
   # Make gene presence/absence input (convert CLARC .csv output to Rtab)
-  awk 'BEGIN {FS=OFS=","} NR==1 {\$1="Gene" \$1} 1' ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_presence_absence.csv | awk '
+  awk 'BEGIN {FS=OFS=","} NR==1 {\$1="Gene" \$1} 1' ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_gene_pres_abs_binary.csv | awk '
    {
        for (i=1; i<=NF; i++)  {
            a[NR,i] = \$i
@@ -884,7 +884,7 @@ process PanGWAS_Panaroo_CLARC_RAxML {
 
 
   # Run Pyseer
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Panaroo_CLARC_RAxML.txt
+  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.3.Panaroo_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Panaroo_CLARC_RAxML.txt
   """
 }
 
@@ -904,7 +904,7 @@ process PanGWAS_Roary_CLARC_RAxML {
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2
 
   # Make gene presence/absence input (convert CLARC .csv output to Rtab)
-  awk 'BEGIN {FS=OFS=","} NR==1 {\$1="Gene" \$1} 1' ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.csv | awk '
+  awk 'BEGIN {FS=OFS=","} NR==1 {\$1="Gene" \$1} 1' ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_gene_pres_abs_binary.csv | awk '
    {
        for (i=1; i<=NF; i++)  {
            a[NR,i] = \$i
@@ -921,7 +921,7 @@ process PanGWAS_Roary_CLARC_RAxML {
    ' FS=',' OFS='\\t' > ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab
 
   # Run Pyseer
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Roary_CLARC_RAxML.txt
+  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Roary_CLARC_RAxML.txt
   """
 }
 
