@@ -200,9 +200,6 @@ Place your gunzipped raw reads in _0.RAW_READS/_
 ### 4.1. Prepare the phenotype files
 * Place your your _phenotypes.txt_ file in _Files/_
 Note: Make sure it has a header.
-```
-sed -i '1i\samples\tbinary' phenotypes.txt
-```
 * Create a copy _phenotypes_filtered.txt_ of your _phenotypes.txt_ file in _Files/_
 
 ## 5. Run Nextflow

@@ -1,10 +1,11 @@
 params.OUTGROUP = false
 params.main = false
 params.sub1 = false
-params.Fasttree = false
+params.RAxML = false
 params.Mash = false
 params.SC = false
 params.sub2 = false
+params.sub3 = false
 
 process Make_architecture {
   input:
@@ -229,7 +230,7 @@ process Filter_out_QC {
 process POPPUNK {
   cpus 8
 
-  conda "poppunk==2.6.0"
+  conda "poppunk=2.7.2"
 
   publishDir "${params.path_nextflow_dir}/9.POPPUNK", overwrite: true
 
@@ -378,7 +379,7 @@ process RAxML_bootstrap {
   mkdir -p ${params.path_nextflow_dir}/12.Phylogeny
   mkdir -p ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML
   # Generate 250 bootstrap tree to infer statistical support of the branches.
-  raxml-ng  --support --tree ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T1.raxml.bestTree --bs-trees ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T2.raxml.bootstraps --threads 48 --prefix ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T3
+  raxml-ng --bootstrap --msa ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean.full.aln --model GTR+G --threads 50  --seed 12345 --prefix ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T2
   """
 }
 
@@ -397,35 +398,11 @@ process RAxML_bipartition {
 
   script:
   """
- # Draw bipartitions on the best ML tree
-  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRCAT -p 12345 -f b -t ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.T1 -z ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bootstrap.T2 -w ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML -n T3
-    """
-}
-
-
-
-
-process RAxML_OUTGROUP {
-  cpus 50
-
-  input:
-  val snippy_out
-
-  output:
-  val snippy_out
-
-  script:
-  """
-  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny
-  mkdir -p ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup
-  # Generate 100 ML trees on distinct starting trees and output the best likelihood tree
-  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -# 100 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean_outgroup.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup -n T1 -o Outgroup
-  # Generate 250 bootstrap tree to infer statistical support of the branches.
-  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRGAMMA -p 12345 -b 12345 -# 250 -s ${params.path_nextflow_dir}/11.SNIPPY_MULTI/clean_outgroup.full.aln -w ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup -n T2 -o Outgroup
   # Draw bipartitions on the best ML tree
-  ${params.path_nextflow_dir}/Files/standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -T 50 -m GTRCAT -p 12345 -f b -t ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup/RAxML_bestTree.T1 -z ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup/RAxML_bootstrap.T2 -w ${params.path_nextflow_dir}/12.Phylogeny/12.3.RAxML_outgroup -n T3
+  raxml-ng --support --tree ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T1.raxml.bestTree --bs-trees ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T2.raxml.bootstraps --threads 50 --prefix ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T3
   """
 }
+
 
 process FASTTREE {
   input:
@@ -578,7 +555,7 @@ process RAxML_dist {
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis
 
   # create phylogeny tsv file
-  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/RAxML_bestTree.T1 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv
+  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T1.raxml.bestTree > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv
   """
 }
 
@@ -846,7 +823,7 @@ process PanGWAS_Roary_Fasttree {
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2
 
   # Run Pyseer
-  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.2.ROARY/gene_presence_absence.Rtab--similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Panaroo_Fasttree.txt
+  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.2.ROARY/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Panaroo_Fasttree.txt
 
   """
 }
@@ -925,6 +902,68 @@ process PanGWAS_Roary_CLARC_Fasttree {
   pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.4.ROARY_CLARC/Output/clarc_results/clarc_condensed_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Roary_CLARC_Fasttree.txt
   """
 }
+
+
+process SNPGWAS_continuous_Fasttree {
+  cpus 8
+
+  conda "pyseer"
+
+  input:
+  val base
+
+
+  script:
+  """
+  # create output folders
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3
+
+  # Run Pyseer
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --continuous --phenotype-column continuous --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/SNPGWAS_continuous_Fasttree.txt
+  """
+}
+
+process DBGWAS_continuous_Fasttree {
+  cpus 8
+
+  conda "pyseer"
+
+  input:
+  val base
+
+
+  script:
+  """
+  # create output folders
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3
+
+  # Run Pyseer
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --continuous --phenotype-column continuous --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_Fasttree_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_continuous_Fasttree.txt
+  """
+}
+
+process PanGWAS_continuous_Fasttree {
+  cpus 8
+
+  conda "pyseer"
+
+  input:
+  val base
+
+
+  script:
+  """
+  # create output folders
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3
+
+  # Run Pyseer
+  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --continuous --phenotype-column continuous --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/PanGWAS_continuous_Fasttree.txt
+  """
+}
+
 
 workflow flow1 {
 take: data
@@ -1072,6 +1111,20 @@ workflow flow_sub2 {
     PanGWAS_Roary_CLARC_Fasttree(Fasttree_dist.out[0])
 }
 
+
+workflow flow_sub3 {
+    take:
+    fasttree_data
+    unitig_data
+    panaroo_data
+
+    main:
+    Fasttree_dist(fasttree_data, unitig_data, panaroo_data)
+    SNPGWAS_continuous_Fasttree(Fasttree_dist.out[0])
+    DBGWAS_continuous_Fasttree(Fasttree_dist.out[0])
+    PanGWAS_continuous_Fasttree(Fasttree_dist.out[0])
+}
+
 workflow {
 channel.fromFilePairs("${params.path_nextflow_dir}/0.RAW_READS/*_{1,2}.fastq.gz")
        .map { it[0] }
@@ -1108,5 +1161,9 @@ flow2(flow1.out)
   if( params.sub2 ) {
     flow_sub2(flow3.out[0], flow3.out[6], flow3.out[7])
     println "Running the Sub-Analysis #2: Pan-GWAS, with the accessory genome defined per Roary, CLARC-redefined Panaroo genes, and CLARC-redefined Roary genes."
+  }
+  if( params.sub3 ) {
+    flow_sub3(flow3.out[0], flow3.out[1], flow3.out[2])
+    println "Running the Sub-Analysis #3: SNP-GWAS, DB-GWAS and Pan-GWAS with continuous age in days as an outcome."
   }
 }
