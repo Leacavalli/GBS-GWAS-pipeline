@@ -537,7 +537,9 @@ process UNITIG {
   """
 }
 
-process RAxML_dist {
+
+
+process Fasttree_sim {
   conda "pyseer"
 
   input:
@@ -555,11 +557,12 @@ process RAxML_dist {
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis
 
   # create phylogeny tsv file
-  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T1.raxml.bestTree > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv
+  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.2.FastTree/GBS_GWAS_FastTree_phylo.tre > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/FastTree_phylogeny_K.tsv
   """
 }
 
-process SNPGWAS_RAxML {
+
+process SNPGWAS_Fasttree_LMM {
   cpus 8
 
   conda "pyseer"
@@ -567,13 +570,14 @@ process SNPGWAS_RAxML {
   input:
   val base
 
+
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/SNPGWAS_RAxML.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/SNPGWAS_Fasttree_LMM.txt
   """
 }
 
-process DBGWAS_RAxML {
+process DBGWAS_Fasttree_LMM {
   cpus 8
 
   conda "pyseer"
@@ -581,13 +585,14 @@ process DBGWAS_RAxML {
   input:
   val base
 
+
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_RAxML_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_RAxML.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/FastTree_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_Fasttree_LMM_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_Fasttree_LMM.txt
   """
 }
 
-process PanGWAS_Panaroo_RAxML {
+process PanGWAS_Panaroo_Fasttree_LMM {
   cpus 8
 
   conda "pyseer"
@@ -595,9 +600,10 @@ process PanGWAS_Panaroo_RAxML {
   input:
   val base
 
+
   script:
   """
-  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/PanGWAS_Panaroo_RAxML.txt
+  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/PanGWAS_Panaroo_Fasttree_LMM.txt
   """
 }
 
@@ -618,14 +624,14 @@ process Fasttree_dist {
   # create output folders
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1
-  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM
 
   # create phylogeny tsv file
-  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.2.FastTree/GBS_GWAS_FastTree_phylo.tre > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv
+  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py ${params.path_nextflow_dir}/12.Phylogeny/12.2.FastTree/GBS_GWAS_FastTree_phylo.tre > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/FastTree_phylogeny_distances.tsv
   """
 }
 
-process SNPGWAS_Fasttree {
+process SNPGWAS_Fasttree_FEM {
   cpus 8
 
   conda "pyseer"
@@ -636,11 +642,11 @@ process SNPGWAS_Fasttree {
 
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/SNPGWAS_Fasttree.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/FastTree_phylogeny_distances.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/SNPGWAS_Fasttree_FEM.txt
   """
 }
 
-process DBGWAS_Fasttree {
+process DBGWAS_Fasttree_FEM {
   cpus 8
 
   conda "pyseer"
@@ -651,11 +657,11 @@ process DBGWAS_Fasttree {
 
   script:
   """
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/DBGWAS_Fasttree_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/DBGWAS_Fasttree.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/FastTree_phylogeny_distances.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/DBGWAS_Fasttree_FEM_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/DBGWAS_Fasttree_FEM.txt
   """
 }
 
-process PanGWAS_Panaroo_Fasttree {
+process PanGWAS_Panaroo_Fasttree_FEM {
   cpus 8
 
   conda "pyseer"
@@ -666,7 +672,73 @@ process PanGWAS_Panaroo_Fasttree {
 
   script:
   """
-  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/PanGWAS_Panaroo_Fasttree.txt
+  pyseer --min-af 0.05 --max-af 0.95 --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/FastTree_phylogeny_distances.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/PanGWAS_Panaroo_Fasttree_FEM.txt
+  """
+}
+
+process RAxML_dist {
+  conda "pyseer"
+
+  input:
+  val input1
+  val input2
+  val input3
+
+  output:
+  val input1
+
+  script:
+  """
+  # create output folders
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM
+
+  # create phylogeny tsv file
+  python ${params.path_nextflow_dir}/Files/pyseer/scripts/phylogeny_distance.py --lmm ${params.path_nextflow_dir}/12.Phylogeny/12.1.RAxML/T1.raxml.bestTree > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM/RAxML_phylogeny_K.tsv
+  """
+}
+
+process SNPGWAS_RAxML {
+  cpus 8
+
+  conda "pyseer"
+
+  input:
+  val base
+
+  script:
+  """
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM/RAxML_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM/SNPGWAS_RAxML.txt
+  """
+}
+
+process DBGWAS_RAxML {
+  cpus 8
+
+  conda "pyseer"
+
+  input:
+  val base
+
+  script:
+  """
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM/RAxML_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM/DBGWAS_RAxML_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_RAxML.txt
+  """
+}
+
+process PanGWAS_Panaroo_RAxML {
+  cpus 8
+
+  conda "pyseer"
+
+  input:
+  val base
+
+  script:
+  """
+  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM/RAxML_phylogeny_K.tsv--cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM/PanGWAS_Panaroo_RAxML.txt
   """
 }
 
@@ -686,11 +758,11 @@ process Mash_dist {
   # create output folders
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1
-  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash
 
   # create distance file
-  mash sketch -s 10000 -o ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/mash_sketch ${params.path_nextflow_dir}/5.ASSEMBLIES/*.fasta
-  mash dist ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/mash_sketch.msh ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/mash_sketch.msh  | square_mash > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/mash.tsv
+  mash sketch -s 10000 -o ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/mash_sketch ${params.path_nextflow_dir}/5.ASSEMBLIES/*.fasta
+  mash dist ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/mash_sketch.msh ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/mash_sketch.msh  | square_mash > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/mash.tsv
   """
 }
 
@@ -705,7 +777,7 @@ process SNPGWAS_Mash {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/SNPGWAS_mash.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/SNPGWAS_mash.txt
   """
 }
 
@@ -720,7 +792,7 @@ process DBGWAS_Mash {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/DBGWAS_mash_unitig_patterns.txt --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/DBGWAS_mash.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/DBGWAS_mash_unitig_patterns.txt --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/DBGWAS_mash.txt
   """
 }
 
@@ -735,7 +807,7 @@ process PanGWAS_Panaroo_Mash {
 
   script:
   """
-  pyseer --min-af 0.05 --max-af 0.95 --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.Mash/PanGWAS_Panaroo_mash.txt
+  pyseer --min-af 0.05 --max-af 0.95 --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/PanGWAS_Panaroo_mash.txt
   """
 }
 
@@ -755,10 +827,10 @@ process SC_dist {
   # create output folders
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1
-  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.SC
+  mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC
 
   # create distances file
-  sed 's/,/\t/g' ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db/GBS_GWAS_db_core_clusters.csv > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.SC/SC_clusters.txt
+  sed 's/,/\t/g' ${params.path_nextflow_dir}/9.POPPUNK/GBS_GWAS_db/GBS_GWAS_db_core_clusters.csv > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/SC_clusters.txt
   """
 }
 
@@ -773,7 +845,7 @@ process SNPGWAS_SC {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered_SC.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.SC/SNPGWAS_SC.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered_SC.txt --vcf ${params.path_nextflow_dir}/11.SNIPPY_MULTI/core.vcf --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/SNPGWAS_SC.txt
   """
 }
 
@@ -788,7 +860,7 @@ process DBGWAS_SC {
 
   script:
   """
-  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered_SC.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.SC/DBGWAS_SC_unitig_patterns.txt --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.SC/DBGWAS_SC.txt
+  pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered_SC.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/DBGWAS_SC_unitig_patterns.txt --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/DBGWAS_SC.txt
   """
 }
 
@@ -803,7 +875,7 @@ process PanGWAS_Panaroo_SC {
 
   script:
   """
-  pyseer --min-af 0.05 --max-af 0.95 --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered_SC.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.SC/PanGWAS_Panaroo_SC.txt
+  pyseer --min-af 0.05 --max-af 0.95 --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered_SC.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.1.Panaroo/gene_presence_absence.Rtab --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/PanGWAS_Panaroo_SC.txt
   """
 }
 
@@ -823,7 +895,7 @@ process PanGWAS_Roary_Fasttree {
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2
 
   # Run Pyseer
-  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.2.ROARY/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Panaroo_Fasttree.txt
+  pyseer --min-af 0.05 --max-af 0.95 --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --pres ${params.path_nextflow_dir}/13.Pangenome_analysis/13.2.ROARY/gene_presence_absence.Rtab --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.3.Subanalysis_2/PanGWAS_Panaroo_Fasttree_LMM.txt
 
   """
 }
@@ -940,7 +1012,7 @@ process DBGWAS_continuous_Fasttree {
   mkdir -p ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3
 
   # Run Pyseer
-  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --continuous --phenotype-column continuous --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_Fasttree_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_continuous_Fasttree.txt
+  pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --continuous --phenotype-column continuous --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree/FastTree_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_Fasttree_LMM_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_continuous_Fasttree.txt
   """
 }
 
@@ -1053,10 +1125,23 @@ workflow flow_main {
     panaroo_data
 
     main:
+    Fasttree_sim(fasttree_data, unitig_data, panaroo_data)
+    SNPGWAS_Fasttree_LMM(Fasttree_sim.out[0])
+    DBGWAS_Fasttree_LMM(Fasttree_sim.out[0])
+    PanGWAS_Panaroo_Fasttree_LMM(Fasttree_sim.out[0])
+}
+
+workflow flow_sub1_Fasttree {
+    take:
+    fasttree_data
+    unitig_data
+    panaroo_data
+
+    main:
     Fasttree_dist(fasttree_data, unitig_data, panaroo_data)
-    SNPGWAS_Fasttree(Fasttree_dist.out[0])
-    DBGWAS_Fasttree(Fasttree_dist.out[0])
-    PanGWAS_Panaroo_Fasttree(Fasttree_dist.out[0])
+    SNPGWAS_Fasttree_FEM(Fasttree_dist.out[0])
+    DBGWAS_Fasttree_FEM(Fasttree_dist.out[0])
+    PanGWAS_Panaroo_Fasttree_FEM(Fasttree_dist.out[0])
 }
 
 workflow flow_sub1_RAxML {
@@ -1105,10 +1190,10 @@ workflow flow_sub2 {
     roary_clarc_data
 
     main:
-    Fasttree_dist(fasttree_data, panaroo_clarc_data, roary_clarc_data)
-    PanGWAS_Roary_Fasttree(Fasttree_dist.out[0])
-    PanGWAS_Panaroo_CLARC_Fasttree(Fasttree_dist.out[0])
-    PanGWAS_Roary_CLARC_Fasttree(Fasttree_dist.out[0])
+    Fasttree_sim(fasttree_data, panaroo_clarc_data, roary_clarc_data)
+    PanGWAS_Roary_Fasttree(Fasttree_sim.out[0])
+    PanGWAS_Panaroo_CLARC_Fasttree(Fasttree_sim.out[0])
+    PanGWAS_Roary_CLARC_Fasttree(Fasttree_sim.out[0])
 }
 
 
@@ -1119,10 +1204,10 @@ workflow flow_sub3 {
     panaroo_data
 
     main:
-    Fasttree_dist(fasttree_data, unitig_data, panaroo_data)
-    SNPGWAS_continuous_Fasttree(Fasttree_dist.out[0])
-    DBGWAS_continuous_Fasttree(Fasttree_dist.out[0])
-    PanGWAS_continuous_Fasttree(Fasttree_dist.out[0])
+    Fasttree_sim(fasttree_data, unitig_data, panaroo_data)
+    SNPGWAS_continuous_Fasttree(Fasttree_sim.out[0])
+    DBGWAS_continuous_Fasttree(Fasttree_sim.out[0])
+    PanGWAS_continuous_Fasttree(Fasttree_sim.out[0])
 }
 
 workflow {
@@ -1141,6 +1226,7 @@ flow2(flow1.out)
     println "Skipping the Main Analysis (SNP-GWAS, DB-GWAS and Pan-GWAS, with the population structure controlled using a Fastree phylogeny and the accessory genome defined per Panaroo)."
   }
   if( params.sub1 ) {
+    flow_sub1_Fasttree(flow3.out[0], flow3.out[1], flow3.out[2])
     flow_sub1_RAxML(flow3.out[5], flow3.out[1], flow3.out[2])
     flow_sub1_Mash(flow3.out[3], flow3.out[1], flow3.out[2])
     flow_sub1_SC(flow3.out[4], flow3.out[1], flow3.out[2])
