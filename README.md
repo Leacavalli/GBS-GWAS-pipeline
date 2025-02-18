@@ -22,8 +22,8 @@ This Nextflow pipeline was built to integrate the following steps:
 | 9 | Obtain Sequence Cluster (SC) classification | [POPPUNK](https://github.com/bacpop/PopPUNK) |
 | 10 | Obtain Clonal Complex (CC) classification | Costume code using data from [BIGSdb](https://pubmlst.org/software/bigsdb) |
 | 11 | Generate a core genome SNP alignment | [snippy-core, snippy-clean_full_aln](https://github.com/tseemann/snippy) |
-| 12.1 | Make accurate ML phylogeny | [RAxML-NG](https://github.com/amkozlov/raxml-ng)|
-| 12.2 | Make fast ML phylogeny | [FastTree ](http://www.microbesonline.org/fasttree/) |
+| 12.1 | Make ML phylogeny | [RAxML-NG](https://github.com/amkozlov/raxml-ng)|
+| 12.2 | Make ML phylogeny | [FastTree ](http://www.microbesonline.org/fasttree/) |
 | 13.1 | Pangenome analysis: identify accessory COGs | [panaroo](https://github.com/gtonkinhill/panaroo) |
 | 13.2 | Pangenome analysis: identify accessory COGs | [roary](https://sanger-pathogens.github.io/Roary/) |
 | 13.3 | Pangenome analysis: re-classify accessory COGs to reduce redundancy | [CLARC]() |
