@@ -22,7 +22,7 @@ This Nextflow pipeline was built to integrate the following steps:
 | 9 | Obtain Sequence Cluster (SC) classification | [POPPUNK](https://github.com/bacpop/PopPUNK) |
 | 10 | Obtain Clonal Complex (CC) classification | Costume code using data from [BIGSdb](https://pubmlst.org/software/bigsdb) |
 | 11 | Generate a core genome SNP alignment | [snippy-core, snippy-clean_full_aln](https://github.com/tseemann/snippy) |
-| 12.1 | Make accurate ML phylogeny | [RAxML](https://cme.h-its.org/exelixis/web/software/raxml/) |
+| 12.1 | Make accurate ML phylogeny | [RAxML-NG](https://github.com/amkozlov/raxml-ng)|
 | 12.2 | Make fast ML phylogeny | [FastTree ](http://www.microbesonline.org/fasttree/) |
 | 13.1 | Pangenome analysis: identify accessory COGs | [panaroo](https://github.com/gtonkinhill/panaroo) |
 | 13.2 | Pangenome analysis: identify accessory COGs | [roary](https://sanger-pathogens.github.io/Roary/) |
@@ -184,7 +184,7 @@ conda create -n sra-tools
 source activate sra-tools
 conda install bioconda::sra-tools
 # Download
-sbatch -p test -t 0-12:00 --mem=100000 --wrap="prefetch --option-file SraAccList.txt"
+sbatch -p test -t 0-12:00 --mem=100000 --wrap="prefetch --option-file SraAccList.txt -O ."
 # Extract the paired end reads
 for i in *RR*
 do
@@ -192,7 +192,7 @@ do
 done
 # Gzip them
 for file in *.fastq; do
-    sbatch -p shared -t 0-00:10 --mem=10000 --wrap="gzip "$file""
+    sbatch -p shared -t 0-12:00 --mem=10000 --wrap="gzip $file"
 done
 ```
 Place your gunzipped raw reads in _0.RAW_READS/_
