@@ -534,6 +534,14 @@ process UNITIG {
   # Run Unitig
   unitig-counter -strains qfile.txt -output ${params.path_nextflow_dir}/14.UNITIGS -nb-cores 8
   cdbg-ops extend --graph ${params.path_nextflow_dir}/14.UNITIGS/graph --unitigs ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt > ${params.path_nextflow_dir}/14.UNITIGS/extended.txt
+
+  # Prepare input file for unitig annotate_hits_pyseer upon running pyseer
+  echo -e '${params.path_nextflow_dir}/Files/AP018935.1.fa\t${params.path_nextflow_dir}/Files/AP018935.1.gff3\tref' > ${params.path_nextflow_dir}/Files/DBGWAS_references.txt
+   for i in ${params.path_nextflow_dir}/5.ASSEMBLIES/*.fasta
+   do
+       sample=\$(basename \$i .fasta)
+       echo -e \"${params.path_nextflow_dir}/5.ASSEMBLIES/\${sample}.fasta\t${params.path_nextflow_dir}/6.ANNOTATION/\${sample}.gff\tdraft\"
+   done >> ${params.path_nextflow_dir}/Files/DBGWAS_references.txt
   """
 }
 
@@ -589,7 +597,8 @@ process DBGWAS_Fasttree_LMM {
   script:
   """
   pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/FastTree_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_Fasttree_LMM_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_Fasttree_LMM.txt
-  """
+  annotate_hits_pyseer ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_Fasttree_LMM.txt ${params.path_nextflow_dir}/Files/DBGWAS_references.txt ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_Fasttree_LMM_annotation.txt
+"""
 }
 
 process PanGWAS_Panaroo_Fasttree_LMM {
@@ -658,7 +667,8 @@ process DBGWAS_Fasttree_FEM {
   script:
   """
   pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/FastTree_phylogeny_distances.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/DBGWAS_Fasttree_FEM_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/DBGWAS_Fasttree_FEM.txt
-  """
+  annotate_hits_pyseer ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/DBGWAS_Fasttree_FEM.txt ${params.path_nextflow_dir}/Files/DBGWAS_references.txt ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.1.Fasttree_FEM/DBGWAS_Fasttree_FEM_annotation.txt
+"""
 }
 
 process PanGWAS_Panaroo_Fasttree_FEM {
@@ -725,6 +735,7 @@ process DBGWAS_RAxML {
   script:
   """
   pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM/RAxML_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.2.RAxML_LMM/DBGWAS_RAxML_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_RAxML.txt
+  annotate_hits_pyseer ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_RAxML.txt ${params.path_nextflow_dir}/Files/DBGWAS_references.txt ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/DBGWAS_RAxML_annotation.txt
   """
 }
 
@@ -793,6 +804,7 @@ process DBGWAS_Mash {
   script:
   """
   pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/DBGWAS_mash_unitig_patterns.txt --distances ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/mash.tsv --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/DBGWAS_mash.txt
+  annotate_hits_pyseer ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/DBGWAS_mash.txt ${params.path_nextflow_dir}/Files/DBGWAS_references.txt ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.3.Mash/DBGWAS_mash_annotation.txt
   """
 }
 
@@ -861,6 +873,7 @@ process DBGWAS_SC {
   script:
   """
   pyseer --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered_SC.txt --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/DBGWAS_SC_unitig_patterns.txt --covariates ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/SC_clusters.txt --use-covariates 2 --no-distances --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/DBGWAS_SC.txt
+  annotate_hits_pyseer ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/DBGWAS_SC.txt ${params.path_nextflow_dir}/Files/DBGWAS_references.txt ${params.path_nextflow_dir}/15.Pyseer/15.2.Subanalysis_1/15.2.4.SC/DBGWAS_SC_annotation.txt
   """
 }
 
@@ -1013,6 +1026,7 @@ process DBGWAS_continuous_Fasttree {
 
   # Run Pyseer
   pyseer --lmm --phenotypes ${params.path_nextflow_dir}/Files/phenotypes_filtered.txt --continuous --phenotype-column continuous --kmers ${params.path_nextflow_dir}/14.UNITIGS/unitigs.txt --uncompressed --similarity ${params.path_nextflow_dir}/15.Pyseer/15.1.Main_analysis/FastTree_phylogeny_K.tsv --output-patterns ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_Fasttree_LMM_unitig_patterns.txt --cpu 8 > ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_continuous_Fasttree.txt
+  annotate_hits_pyseer ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_continuous_Fasttree.txt ${params.path_nextflow_dir}/Files/DBGWAS_references.txt ${params.path_nextflow_dir}/15.Pyseer/15.4.Subanalysis_3/DBGWAS_continuous_Fasttree_annotation.txt
   """
 }
 

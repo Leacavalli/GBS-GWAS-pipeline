@@ -85,10 +85,9 @@ cd GBS-GWAS-pipeline/Nextflow_pipeline/
 module load python
 conda create -n java      # Only run once to set up; All following times, skip this
 source activate java
-conda install openjdk=11  # Only run once to set up; All following times, skip this
+conda install openjdk=17  # Only run once to set up; All following times, skip this
 java -version             # Check java version
-deactivate java             
-
+conda deactivate              
 ```
 ### 2.2. Install Nextflow
 ```
@@ -118,7 +117,8 @@ module load python
 conda create -n  unicycler   
 source activate unicycler
 conda install bioconda::unicycler
-
+unicycler -h
+conda deactivate              
 ```
 ### 3.3. Install FastTree
 ```
@@ -130,20 +130,12 @@ chmod +x FastTree
 ```
 ### 3.4. Install RAxML-NG
 ```
-# download
-# cd Files
-# wget https://github.com/stamatak/standard-RAxML/archive/master.zip
-# unzip master.zip
-# compile source code
-# cd standard-RAxML-master/
-# make -f Makefile.SSE3.PTHREADS.gcc # parallelized and x86 processor optimized version
-# cd ../
-# standard-RAxML-master/raxmlHPC-PTHREADS-SSE3 -h
 module load python
 conda create -n raxml-ng
 source activate raxml-ng
 conda install -c bioconda raxml-ng
 raxml-ng -h
+conda deactivate
 ```
 ### 3.5. Install ROARY
 ```
@@ -155,6 +147,7 @@ conda config --add channels defaults
 conda config --add channels conda-forge
 conda config --add channels bioconda
 conda install roary
+conda deactivate
 ```
 ### 3.6. Install CLARC
 ```
@@ -173,6 +166,7 @@ conda deactivate
 ```
 cd Files
 git clone https://github.com/mgalardini/pyseer
+python pyseer/scripts/phylogeny_distance.py -h
 ```
 ## 4. Prepare input data
 ### 4.0. (Optional) Download Raw reads from NCBI
