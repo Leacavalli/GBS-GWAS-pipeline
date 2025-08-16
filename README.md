@@ -14,7 +14,8 @@ This Nextflow pipeline was built to integrate the following steps:
 | 1 | Trim sequencing primers  | [Trimmomatic](https://github.com/timflutre/trimmomatic)  |
 | 2 | Reads Quality Control | [FastQC](https://github.com/s-andrews/FastQC)  |
 | 3 | Determine the serotype and ST of isolates | [SRST2](https://github.com/katholt/srst2), with [GBS-SG](https://github.com/swainechen/GBS-SBG)  
-| 4 | Mapping to reference genome and variant calling | [Snippy](https://github.com/tseemann/snippy)  |
+| 4.1 | Map to reference genome and variant calling | [Snippy](https://github.com/tseemann/snippy)  |
+| 4.2 | Decompose complex variants, filter SNPs with AF>95% | [bcftools](https://samtools.github.io/bcftools/bcftools.html)  |
 | 5 | Assemble reads  | [Unicycler](https://github.com/rrwick/Unicycler)  |
 | 6 | Genome Annotation | [Prokka](https://github.com/tseemann/prokka)  |
 | 7 | Identify contaminated samples  | [FastANI](https://github.com/ParBLiSS/FastANI) |
@@ -22,11 +23,9 @@ This Nextflow pipeline was built to integrate the following steps:
 | 9 | Obtain Sequence Cluster (SC) classification | [POPPUNK](https://github.com/bacpop/PopPUNK) |
 | 10 | Obtain Clonal Complex (CC) classification | Costume code using data from [BIGSdb](https://pubmlst.org/software/bigsdb) |
 | 11 | Generate a core genome SNP alignment | [snippy-core, snippy-clean_full_aln](https://github.com/tseemann/snippy) |
-| 12.1 | Make ML phylogeny | [RAxML-NG](https://github.com/amkozlov/raxml-ng)|
-| 12.2 | Make ML phylogeny | [FastTree ](http://www.microbesonline.org/fasttree/) |
-| 13.1 | Pangenome analysis: identify accessory COGs | [panaroo](https://github.com/gtonkinhill/panaroo) |
-| 13.2 | Pangenome analysis: identify accessory COGs | [roary](https://sanger-pathogens.github.io/Roary/) |
-| 13.3 | Pangenome analysis: re-classify accessory COGs to reduce redundancy | [CLARC]() |
+| 12 | Generate a Multi-Sample core SNP VCF | [bcftools merge](https://samtools.github.io/bcftools/bcftools.html#merge) |
+| 13 | Make ML phylogeny | [RAxML-NG](https://github.com/amkozlov/raxml-ng), [FastTree ](http://www.microbesonline.org/fasttree/) |
+| 14 | Pangenome analysis: identify accessory COGs | [panaroo](https://github.com/gtonkinhill/panaroo), [roary](https://sanger-pathogens.github.io/Roary/), [CLARC](https://github.com/IndraGonz/CLARC) |
 | 14 | Call unitigs | [unitig-counter](https://github.com/bacpop/unitig-counter) |
 | 15 | SNP-GWAS, DB-GWAS and PanGWAS | [Pyseer](https://pyseer.readthedocs.io/en/master/) |
 
@@ -125,6 +124,7 @@ conda deactivate
 cd Files
 curl -O http://www.microbesonline.org/fasttree/FastTree.c
 gcc -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
+# gcc -DUSE_DOUBLE -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
 chmod +x FastTree
 ./FastTree -h
 ```
