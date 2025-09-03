@@ -37,6 +37,8 @@ Nextflow_pipeline\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- Nextflow_pipeline.nf\
 &nbsp;&nbsp;| --- Files\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- AP018935.1.fa\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- AP018935.1.gff3\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- snpEff.config\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- GBS-SBG.fasta\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- Streptococcus_agalactiae.fasta\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|--- profiles_csv\
@@ -119,14 +121,13 @@ conda install bioconda::unicycler
 unicycler -h
 conda deactivate              
 ```
-### 3.3. Install FastTree
+### 3.3. Install FastTree (double precision)
 ```
 cd Files
 curl -O http://www.microbesonline.org/fasttree/FastTree.c
-gcc -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
-# gcc -DUSE_DOUBLE -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
-chmod +x FastTree
-./FastTree -h
+gcc -DUSE_DOUBLE -O3 -finline-functions -funroll-loops -Wall -o FastTree_DUSE_DOUBLE FastTree.c -lm
+chmod +x FastTree_DUSE_DOUBLE
+./FastTree_DUSE_DOUBLE -h
 ```
 ### 3.4. Install RAxML-NG
 ```
